@@ -97,6 +97,7 @@
 				texture.needsUpdate = true;
 
 				mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { map: texture } ) );
+        mesh.position.set(7500/2,0,7500/2);
 				scene.add( mesh );
 
 				renderer = new THREE.WebGLRenderer();
@@ -135,7 +136,7 @@
 				var size = width * height, data = new Uint8Array( size ),
 				perlin = new ImprovedNoise(), quality = 2, z = Math.random() * 100;
 
-				for ( var j = 0; j < 4; j ++ ) {
+				for ( var j = 0; j < 3; j ++ ) {
 
 					for ( var i = 0; i < size; i ++ ) {
 
@@ -144,7 +145,7 @@
 
 					}
 
-					quality *= 3.5;
+					quality *= 7;
 
 				}
 
@@ -182,9 +183,9 @@
 
 					shade = vector3.dot( sun );
 
-					imageData[ i ] = ( 96 + shade * 128 ) * ( 0.5 + data[ j ] * 0.007 );
-					imageData[ i + 1 ] = ( 32 + shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-					imageData[ i + 2 ] = ( shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
+					imageData[ i ] = ( 160 + shade * 32 ) * ( 0.5 + data[ j ] * 0.007 );
+					imageData[ i + 1 ] = ( 160 + shade * 32 ) * ( 0.5 + data[ j ] * 0.007 );
+					imageData[ i + 2 ] = ( 160 + shade * 32 ) * ( 0.5 + data[ j ] * 0.007 );
 				}
 
 				context.putImageData( image, 0, 0 );
@@ -218,6 +219,39 @@
 
 			}
 
+      function plantTrees(width, height, data) {
+        
+        THREE.ImageUtils.loadTexture( "puu1.png", null, function(map){
+
+        map.minFilter = THREE.NearestFilter;
+        var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
+
+        var n = Math.sqrt(data.length);
+
+        for (var i=0; i<n; i++) {
+          var sprite = new THREE.Sprite( material.clone() );
+          var x = Math.random()*width;
+          var y = Math.random()*height;
+          var z = data[Math.floor(y)*width+Math.ceil(x)];
+
+            x = x/width*7500;
+            y = y/width*7500;
+            z *= 10;
+
+            var imageWidth = map.image.width;
+            var imageHeight = material.map.image.height;
+            sprite = new THREE.Sprite(material);
+            sprite.scale.set(2 * imageWidth, 2 * imageHeight, 1.0);
+            sprite.position.set(x, z+imageHeight/2, y);
+
+
+
+            scene.add( sprite );
+          }
+
+
+        } );
+      }
 
 			//
 
