@@ -134,18 +134,19 @@
 			function generateHeight( width, height ) {
 
 				var size = width * height, data = new Uint8Array( size ),
-				perlin = new ImprovedNoise(), quality = 2, z = Math.random() * 100;
+				perlin = new ImprovedNoise(), quality = 3.3, z = Math.random() * 10;
 
-				for ( var j = 0; j < 3; j ++ ) {
-
-					for ( var i = 0; i < size; i ++ ) {
+				for ( var i = 0; i < size; i ++ ) {
 
 						var x = i % width, y = ~~ ( i / width );
 						data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * quality * 1.75 );
 
-					}
+				}
+				quality *= 80;
+				for ( var i = 0; i < size; i ++ ) {
 
-					quality *= 7;
+						var x = i % width, y = ~~ ( i / width );
+						data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * 50 * 1.7 );
 
 				}
 
@@ -183,9 +184,9 @@
 
 					shade = vector3.dot( sun );
 
-					imageData[ i ] = ( 160 + shade * 32 ) * ( 0.5 + data[ j ] * 0.007 );
-					imageData[ i + 1 ] = ( 160 + shade * 32 ) * ( 0.5 + data[ j ] * 0.007 );
-					imageData[ i + 2 ] = ( 160 + shade * 32 ) * ( 0.5 + data[ j ] * 0.007 );
+					imageData[ i ] = ( 190 + shade * 32 ) * ( 0.5 + data[ j ] * 0.01 );
+					imageData[ i + 1 ] = ( 190 + shade * 32 ) * ( 0.5 + data[ j ] * 0.01 );
+					imageData[ i + 2 ] = ( 190 + shade * 32 ) * ( 0.5 + data[ j ] * 0.01 );
 				}
 
 				context.putImageData( image, 0, 0 );
@@ -199,6 +200,7 @@
 				context = canvasScaled.getContext( '2d' );
 				context.scale( 4, 4 );
 				context.drawImage( canvas, 0, 0 );
+        drawTract(context, data);
 
 				image = context.getImageData( 0, 0, canvasScaled.width, canvasScaled.height );
 				imageData = image.data;
@@ -219,38 +221,69 @@
 
 			}
 
+      function drawTract(img, data) {
+        var n = 5 + Math.random()*10;
+        path = [];
+
+        img.beginPath();
+
+				// put position in one of the corners and start drawing line
+        var p0 = [5,5], p1;
+        img.moveTo(20,20);
+        var dir = Math.PI/4;
+        for (var i=0; i<n; i++) {
+          var len = 128*Math.random();
+          p1 = [ p0[0] + Math.sin(dir)*len,
+                 p0[1] + Math.cos(dir)*len ];
+          dir += Math.PI * Math.random() - Math.PI/2; 
+          if (!(0 < p1[0] && p1[0] < 256 && 0 < p1[1] && p1[1] < 256)) {
+            i--;
+            continue;
+          }
+					img.lineTo(p1[0]*4, p1[1]*4);
+          p0 = p1;
+        }
+        
+        img.closePath();
+        img.lineWidth = 1.3;
+        img.strokeStyle = 'rgba(0,0,0,0.5)';
+        img.stroke();
+        img.lineWidth = 2.5;
+        img.strokeStyle = 'rgba(0,0,0,0.1)';
+        img.stroke();
+
+      }
+
+
       function plantTrees(width, height, data) {
         
-        THREE.ImageUtils.loadTexture( "puu1.png", null, function(map){
+        var trees = ["puu1.png", "puu2.png"];
+        for (var t=0; t<trees.length; t++) {
+          THREE.ImageUtils.loadTexture( trees[t], null, function(map){
 
-        map.minFilter = THREE.NearestFilter;
-        var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
+            map.minFilter = THREE.NearestFilter;
+            var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
 
-        var n = Math.sqrt(data.length);
+            var n = Math.sqrt(data.length/trees.length);
+            for (var i=0; i<n; i++) {
+              var sprite = new THREE.Sprite( material.clone() );
+              var x = Math.random()*width;
+              var y = Math.random()*height;
+              var z = data[Math.floor(y)*width+Math.ceil(x)];
 
-        for (var i=0; i<n; i++) {
-          var sprite = new THREE.Sprite( material.clone() );
-          var x = Math.random()*width;
-          var y = Math.random()*height;
-          var z = data[Math.floor(y)*width+Math.ceil(x)];
+              x = x/width*7500;
+              y = y/width*7500;
+              z *= 10;
 
-            x = x/width*7500;
-            y = y/width*7500;
-            z *= 10;
-
-            var imageWidth = map.image.width;
-            var imageHeight = material.map.image.height;
-            sprite = new THREE.Sprite(material);
-            sprite.scale.set(2 * imageWidth, 2 * imageHeight, 1.0);
-            sprite.position.set(x, z+imageHeight/2, y);
-
-
-
-            scene.add( sprite );
-          }
-
-
-        } );
+              var imageWidth = map.image.width;
+              var imageHeight = material.map.image.height;
+              sprite = new THREE.Sprite(material);
+              sprite.scale.set(2 * imageWidth, 2 * imageHeight, 1.0);
+              sprite.position.set(x, z+imageHeight*0.9, y);
+              scene.add( sprite );
+            }
+          } );
+        }
       }
 
 			//
