@@ -4,9 +4,11 @@
  * @author paulirish / http://paulirish.com/
  */
 
-THREE.FirstPersonControls = function ( object, domElement ) {
+THREE.Controls = function ( object, data, geometry, domElement ) {
 
 	this.object = object;
+  this.data = data;
+  this.geometry = geometry;
 	this.target = new THREE.Vector3( 0, 0, 0 );
 
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -49,6 +51,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
+
+  this.speed = 0;
+
 
 	if ( this.domElement !== document ) {
 
@@ -185,6 +190,13 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.update = function( delta ) {
+    // where we are?
+    var ix = this.object.position.x/7500*256,
+        iy = this.object.position.z/7500*256;
+		var vertices = this.geometry.attributes.position.array;
+    this.object.position.y = vertices[3*(Math.round(ix) + Math.round(iy)*256) + 1] + 100;
+//console.log(ix, iy, this.object.position.y);
+
 //console.log(this.object.position.x, this.object.position.z );
 		if ( this.enabled === false ) return;
 
@@ -206,12 +218,13 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
 		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
 
-		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
-		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
+		//if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
+		//if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
+/*
 		if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
 		if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
-
+*/
 		var actualLookSpeed = delta * this.lookSpeed;
 
 		if ( !this.activeLook ) {
@@ -228,7 +241,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		}
 
-		this.lon += this.mouseX * actualLookSpeed;
+		//this.lon += this.mouseX * actualLookSpeed;
+		if ( this.moveLeft ) this.lon -= 2.5;
+		if ( this.moveRight ) this.lon += 2.5;
+
 		if ( this.lookVertical ) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
 
 		this.lat = Math.max( - 85, Math.min( 85, this.lat ) );
@@ -255,11 +271,11 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-
+/*
 	this.domElement.addEventListener( 'mousemove', bind( this, this.onMouseMove ), false );
 	this.domElement.addEventListener( 'mousedown', bind( this, this.onMouseDown ), false );
 	this.domElement.addEventListener( 'mouseup', bind( this, this.onMouseUp ), false );
-
+*/
 	window.addEventListener( 'keydown', bind( this, this.onKeyDown ), false );
 	window.addEventListener( 'keyup', bind( this, this.onKeyUp ), false );
 

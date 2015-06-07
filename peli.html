@@ -23,7 +23,6 @@
 			}
 
 			a {
-
 				color: #a06851;
 			}
 
@@ -36,7 +35,7 @@
 
 		<script src="three.min.js"></script>
 
-		<script src="FirstPersonControls.js"></script>
+		<script src="Controls.js"></script>
 
 		<script src="ImprovedNoise.js"></script>
 		<script src="Detector.js"></script>
@@ -73,9 +72,6 @@
 
 				scene = new THREE.Scene();
 
-				controls = new THREE.FirstPersonControls( camera );
-				controls.movementSpeed = 1000;
-				controls.lookSpeed = 0.1;
 
 				data = generateHeight( worldWidth, worldDepth );
         plantTrees(worldWidth, worldDepth, data);
@@ -99,6 +95,12 @@
 				mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { map: texture } ) );
         mesh.position.set(7500/2,0,7500/2);
 				scene.add( mesh );
+
+
+				controls = new THREE.Controls( camera, data, geometry );
+				controls.movementSpeed = 1000;
+				controls.lookSpeed = 0.1;
+
 
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0xbfd1e5 );
