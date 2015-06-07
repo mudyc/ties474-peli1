@@ -53,7 +53,11 @@ THREE.Controls = function ( object, data, geometry, domElement ) {
 	this.viewHalfY = 0;
 
   this.speed = 0;
+  this.t0 = 0;
 
+  this.snd_speeding = new Audio('snd/speeding.wav');
+  this.snd_running = new Audio('snd/running.wav');
+  this.snd_breaking = new Audio('snd/breaking.wav');
 
 	if ( this.domElement !== document ) {
 
@@ -215,8 +219,40 @@ THREE.Controls = function ( object, data, geometry, domElement ) {
 
 		var actualMoveSpeed = delta * this.movementSpeed;
 
-		if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
-		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
+		//if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
+		//if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
+		if ( this.moveForward ) {
+      this.speed += 0.01;
+      if (this.snd_speeding.paused) {
+        var dur = this.snd_speeding.duration;
+        this.snd_speeding.currentTime = dur * this.speed *0.95;
+console.log(dur, this.speed, this.snd_speeding.currentTime, dur * this.speed *0.90 );
+        this.snd_speeding.play();
+      }
+      this.snd_running.pause();
+      this.snd_breaking.pause();
+    }
+		else if ( this.moveBackward ) {
+      this.speed -= 0.012;
+      this.snd_speeding.pause();
+      this.snd_running.pause();
+      if (this.snd_breaking.paused)
+        this.snd_breaking.play();
+    } else {
+      this.speed -= 0.005;
+      this.snd_speeding.pause();
+      if (this.snd_running.paused)
+        this.snd_running.play();
+      this.snd_breaking.pause();
+    } 
+    this.speed = Math.max(0, Math.min(1, this.speed));
+    var t1 = Date.now()
+    var dt = t1-this.t0;
+		if (dt > 1000) dt = 0;
+    //this.
+		//this.object.translateZ( dt*this.speed*5 );
+    this.t0 = t1;
+
 
 		//if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 		//if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
@@ -241,6 +277,10 @@ THREE.Controls = function ( object, data, geometry, domElement ) {
 
 		}
 
+    var v = dt*this.speed*6;
+    this.object.position.z += Math.sin(THREE.Math.degToRad(this.lon))*v;
+    this.object.position.x += Math.cos(THREE.Math.degToRad(this.lon))*v;
+
 		//this.lon += this.mouseX * actualLookSpeed;
 		if ( this.moveLeft ) this.lon -= 2.5;
 		if ( this.moveRight ) this.lon += 2.5;
@@ -257,6 +297,7 @@ THREE.Controls = function ( object, data, geometry, domElement ) {
 			this.phi = THREE.Math.mapLinear( this.phi, 0, Math.PI, this.verticalMin, this.verticalMax );
 
 		}
+
 
 		var targetPosition = this.target,
 			position = this.object.position;
